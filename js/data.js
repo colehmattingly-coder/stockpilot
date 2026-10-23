@@ -1,4 +1,5 @@
-// Data layer: Finnhub (free tier) when a key is set, bundled demo data otherwise.
+// Data layer: Finnhub (free tier) when a key is set; otherwise a real end-of-day
+// snapshot (data/snapshot.json, built by backtest/run.mjs) for 40 large stocks.
 // Responses are cached in localStorage so reloads don't burn the 60 calls/min limit.
 const Data = (() => {
   const BASE = 'https://finnhub.io/api/v1';
@@ -55,9 +56,18 @@ const Data = (() => {
     throw new Error('Rate limited by Finnhub — wait a minute, then refresh.');
   }
 
-  function demoStock(sym) {
-    const s = DEMO.stocks[sym];
-    if (!s) throw new Error(`${sym} isn't in the demo data. Add a free Finnhub key in Settings to track any ticker.`);
+  let snap = null;
+  async function snapshot() {
+    if (!snap) {
+      const r = await fetch('data/snapshot.json');
+      if (!r.ok) throw new Error('Could not load the price snapshot.');
+      snap = await r.json();
+    }
+    return snap;
+  }
+  async function snapStock(sym) {
+    const s = (await snapshot()).stocks[sym];
+    if (!s) throw new Error(`${sym} needs live data. Add your free Finnhub key in Settings to look up any ticker.`);
     return s;
   }
 
@@ -65,21 +75,23 @@ const Data = (() => {
 
   return {
     isLive, getKey, setKey, clearCache,
+    snapshotDate: () => (snap ? snap.asOf : null),
+    snapshotSymbols: () => (snap ? Object.keys(snap.stocks) : []),
     async quote(sym, force) {
-      if (!isLive()) return DEMO.etf[sym] || demoStock(sym).q;
+      if (!isLive()) { const sn = await snapshot(); return sn.etf[sym] || (await snapStock(sym)).q; }
       return get('/quote', { symbol: sym }, 2 * MIN, force);
     },
     async metric(sym) {
-      if (!isLive()) return demoStock(sym).m;
+      if (!isLive()) return (await snapStock(sym)).m;
       const d = await get('/stock/metric', { symbol: sym, metric: 'all' }, 12 * HOUR);
       return d.metric || {};
     },
     async profile(sym) {
-      if (!isLive()) return demoStock(sym).p;
+      if (!isLive()) return (await snapStock(sym)).p;
       return get('/stock/profile2', { symbol: sym }, 7 * 24 * HOUR);
     },
     async recs(sym) {
-      if (!isLive()) return demoStock(sym).r;
+      if (!isLive()) return (await snapStock(sym)).r;
       const d = await get('/stock/recommendation', { symbol: sym }, 12 * HOUR);
       return Array.isArray(d) ? d[0] || null : null;
     },

@@ -49,11 +49,11 @@ const Engine = (() => {
     const best = ranked[0], worst = ranked[ranked.length - 1];
     const lines = [
       `S&P 500 ${pct(spy, 2)}, Nasdaq 100 ${pct(dp('QQQ'), 2)}, Russell 2000 ${pct(dp('IWM'), 2)}, Dow ${pct(dp('DIA'), 2)}.`,
-      `Breadth: ${up} of ${secs.length} sectors are higher${breadth < 0.35 ? ' — selling is broad-based' : breadth > 0.7 ? ' — a broad rally' : ''}.`,
+      `Breadth: ${up} of ${secs.length} sectors are higher${breadth < 0.35 ? ', so selling is broad-based' : breadth > 0.7 ? ', a broad rally' : ''}.`,
       rotation > 0.5
-        ? 'Defensive sectors (utilities, staples, health care) are leading while growth lags — classic risk-off rotation.'
+        ? 'Defensive sectors (utilities, staples, health care) are leading while growth lags. That is a classic risk-off rotation.'
         : rotation < -0.5
-          ? 'Growth sectors (tech, discretionary, communications) are leading — investors are leaning into risk.'
+          ? 'Growth sectors (tech, discretionary, communications) are leading, so investors are leaning into risk.'
           : 'No clear rotation between growth and defensive sectors.',
       best ? `Strongest sector: ${SECTORS[best]} (${pct(dp(best))}). Weakest: ${SECTORS[worst]} (${pct(dp(worst))}).` : '',
       Math.abs(smallVsLarge) > 0.4 ? `Small caps are ${smallVsLarge < 0 ? 'underperforming' : 'outperforming'} large caps by ${Math.abs(smallVsLarge).toFixed(1)} pts${smallVsLarge < 0 ? ', another sign of caution' : ', a sign of risk appetite'}.` : '',
@@ -144,9 +144,9 @@ const Engine = (() => {
     const conditions = [
       { k: 'Market', v: `${market.label} tape (sentiment ${market.score}/100). S&P 500 ${pct(spy, 2)} today.` },
       secSym !== 'SPY' && num(secDp)
-        ? { k: 'Sector', v: `${SECTORS[secSym]} (${secSym}) ${pct(secDp)} — ${secDp < spy ? 'lagging' : 'beating'} the S&P 500.` } : null,
+        ? { k: 'Sector', v: `${SECTORS[secSym]} (${secSym}) ${pct(secDp)}, ${secDp < spy ? 'lagging' : 'beating'} the S&P 500.` } : null,
       { k: 'Market sensitivity', v: `Beta ${beta.toFixed(2)}: the market alone implies ${pct(expected)}; actual ${pct(q.dp)}, so ${attribution}.` },
-      { k: 'Fundamentals', v: f.notes.length ? `${f.label} — ${f.notes.join(', ')}.` : 'Not enough data.' },
+      { k: 'Fundamentals', v: f.notes.length ? `${f.label}: ${f.notes.join(', ')}.` : 'Not enough data.' },
       { k: 'Trend', v: [
         num(m['13WeekPriceReturnDaily']) ? `3-month ${pct(m['13WeekPriceReturnDaily'])}` : null,
         num(m['26WeekPriceReturnDaily']) ? `6-month ${pct(m['26WeekPriceReturnDaily'])}` : null,
@@ -173,94 +173,96 @@ const Engine = (() => {
     const addHi = s1 && ns && s1.p > ns.p ? s1.p : null;
     const addZone = addLo ? (addHi ? `${usd(addLo)} – ${usd(addHi)}` : usd(addLo)) : '—';
     const fnotes = f.notes.slice(0, 2).join(', ');
-    let action, tone, headline, why = [], steps = [];
+    const fn = fnotes ? ` (${fnotes})` : '';
+    let rule, action, tone, headline, why = [], steps = [];
 
-    if (strong && broke) {
+    if (strong && broke) { rule = 'strong-breakdown';
       action = 'HOLD'; tone = 'warn';
       headline = `Strong business, but it just slipped under its ${broke.label} (${usd(broke.p)}). Hold while it stays above ${usd(nextSup ? nextSup.p : stop)}.`;
-      why.push(`Fundamentals are still ${f.label.toLowerCase()} (${fnotes}).`, `Today's ${pct(q.dp)} move took out a level buyers had been defending.`);
-      steps.push(`Hold — one bad day doesn't change the thesis.`, `A close back above ${usd(broke.p)} = failed breakdown, a bullish signal.`, `Stop: daily close below ${usd(stop)}.`);
-    } else if (strong && nearSup && mWeak) {
+      why.push(`Fundamentals are still ${f.label.toLowerCase()}${fn}.`, `Today's ${pct(q.dp)} move took it below that level.`);
+      steps.push(`Hold. One bad day doesn't change the thesis.`, `A close back above ${usd(broke.p)} = failed breakdown, a bullish signal.`, `Stop: daily close below ${usd(stop)}.`);
+    } else if (strong && nearSup && mWeak) { rule = 'strong-support-weakmkt';
       action = 'HOLD'; tone = 'good';
-      headline = 'Market-driven pullback into support — keep holding.';
-      why.push(`The company keeps posting strong numbers (${fnotes}), but the ${market.label.toLowerCase()} market is dragging it lower.`,
-        `It's ${supDist.toFixed(1)}% above the ${ns.label} at ${usd(ns.p)} — a likely bounce zone.`);
-      steps.push(`Hold the position; don't sell a strong stock into market-wide fear.`, `Optional add zone: ${addZone} if support holds.`, `Stop: daily close below ${usd(stop)}.`, target ? `Upside target: ${usd(target)} (${nr ? nr.label : '52-week high'}).` : null);
-    } else if (strong && nearSup) {
+      headline = 'Pulled back with the market to support. Keep holding.';
+      why.push(`The company keeps posting strong numbers${fn}, but the ${market.label.toLowerCase()} market is dragging it lower.`,
+        `It's ${supDist.toFixed(1)}% above the ${ns.label} at ${usd(ns.p)}, the nearest major support level.`);
+      steps.push(`Hold. Selling a strong company into a market-wide drop usually locks in the worst price.`, `Optional add zone: ${addZone} if support holds.`, `Stop: daily close below ${usd(stop)}.`, target ? `Upside target: ${usd(target)} (${nr ? nr.label : '52-week high'}).` : null);
+    } else if (strong && nearSup) { rule = 'strong-support';
       action = 'ADD'; tone = 'good';
-      headline = 'Strong name resting on support — favorable risk/reward to add.';
-      why.push(`${f.label} fundamentals (${fnotes}).`, `Only ${supDist.toFixed(1)}% above the ${ns.label} (${usd(ns.p)}), so risk is well defined.`);
+      headline = 'Strong company sitting on support. A good spot to add.';
+      why.push(`${f.label} fundamentals${fn}.`, `Only ${supDist.toFixed(1)}% above the ${ns.label} (${usd(ns.p)}), so risk is well defined.`);
       steps.push(`Add in the ${addZone} zone.`, `Stop: daily close below ${usd(stop)}.`, target ? `Target: ${usd(target)}.` : null);
-    } else if (strong && nearRes && !mWeak) {
+    } else if (strong && nearRes && !mWeak) { rule = 'strong-resistance';
       action = 'HOLD'; tone = 'good';
-      headline = `Pressing into resistance at ${usd(nr.p)} — let the winner run.`;
-      why.push(`${f.label} fundamentals (${fnotes}) and a supportive market.`, `${nr.label} sits ${resDist.toFixed(1)}% overhead.`);
+      headline = `Pressing into resistance at ${usd(nr.p)}. Let the winner run.`;
+      why.push(`${f.label} fundamentals${fn} and a supportive market.`, `${nr.label} sits ${resDist.toFixed(1)}% overhead.`);
       steps.push(`Hold. A breakout above ${usd(nr.p)} opens the next leg.`, `If it's rejected there, trim 10–20% and re-buy near ${addZone}.`, `Raise stop to ${usd(stop)}.`);
-    } else if (strong && mWeak) {
+    } else if (strong && mWeak) { rule = 'strong-weakmkt';
       action = 'HOLD'; tone = 'neutral';
-      headline = `Quality name in a weak tape — hold, and wait for a better entry near ${addZone}.`;
-      why.push(`${f.label} fundamentals (${fnotes}).`, `The market backdrop is ${market.label.toLowerCase()}, so new money can be patient.`);
+      headline = `Quality company in a weak market. Hold, and wait for a better entry near ${addZone}.`;
+      why.push(`${f.label} fundamentals${fn}.`, `The market backdrop is ${market.label.toLowerCase()}, so new money can be patient.`);
       steps.push(`Hold the core position.`, `Look to add near ${addZone}.`, `Stop: daily close below ${usd(stop)}.`);
-    } else if (strong) {
+    } else if (strong) { rule = 'strong';
       action = 'HOLD'; tone = 'good';
-      headline = `Healthy setup — hold; add on dips toward ${addZone}.`;
-      why.push(`${f.label} fundamentals (${fnotes}).`, `Market backdrop is ${market.label.toLowerCase()}.`);
+      headline = `Healthy setup. Hold, and add on dips toward ${addZone}.`;
+      why.push(`${f.label} fundamentals${fn}.`, `Market backdrop is ${market.label.toLowerCase()}.`);
       steps.push(`Hold.`, `Add on pullbacks to ${addZone}.`, target ? `Next resistance: ${usd(target)}.` : null);
-    } else if (weak && (broke || (mWeak && !nearSup))) {
+    } else if (weak && (broke || (mWeak && !nearSup))) { rule = 'weak-breakdown';
       action = 'REDUCE'; tone = 'bad';
-      headline = broke ? `Weak fundamentals and it just broke the ${broke.label} — reduce exposure.` : 'Weak fundamentals in a weak market, with no support nearby — reduce exposure.';
-      why.push(`Fundamentals are ${f.label.toLowerCase()} (${fnotes || 'limited data'}).`, mWeak ? `The ${market.label.toLowerCase()} market removes the safety net.` : `Price action confirms the weakness.`);
+      headline = broke ? `Weak fundamentals and it just broke its ${broke.label}. Reduce exposure.` : 'Weak fundamentals in a weak market, with no support nearby. Reduce exposure.';
+      why.push(`Fundamentals are ${f.label.toLowerCase()}${fn}.`, mWeak ? `The ${market.label.toLowerCase()} market removes the safety net.` : `Price action confirms the weakness.`);
       steps.push(`Cut the position by a third to a half.`, `Hard stop on the rest: ${usd(stop)}.`, broke ? `Re-evaluate only if it reclaims ${usd(broke.p)}.` : null);
-    } else if (weak && mStrong && dayRel < 0) {
+    } else if (weak && mStrong && dayRel < 0) { rule = 'weak-lagging';
       action = 'TRIM'; tone = 'bad';
-      headline = 'Lagging a rising market — stock-specific weakness.';
-      why.push(`Down ${pct(dayRel)} vs the S&P 500 on an up day.`, `Fundamentals are ${f.label.toLowerCase()} (${fnotes}).`);
+      headline = 'Falling behind a rising market. The weakness is in the stock itself.';
+      why.push(`Down ${pct(dayRel)} vs the S&P 500 on an up day.`, `Fundamentals are ${f.label.toLowerCase()}${fn}.`);
       steps.push(`Trim into any bounce toward ${nr ? usd(nr.p) : 'resistance'}.`, `Stop: ${usd(stop)}.`);
-    } else if (weak && nearSup) {
+    } else if (weak && nearSup) { rule = 'weak-support';
       action = 'WATCH'; tone = 'warn';
       headline = `Sitting on support at ${usd(ns.p)}, but fundamentals don't justify adding.`;
-      why.push(`Fundamentals are ${f.label.toLowerCase()} (${fnotes}).`, `Support is only ${supDist.toFixed(1)}% below — a bounce is possible, but don't count on it.`);
+      why.push(`Fundamentals are ${f.label.toLowerCase()}${fn}.`, `Support is only ${supDist.toFixed(1)}% below. A bounce is possible, but don't count on it.`);
       steps.push(`Hold with a tight stop at ${usd(stop)}.`, `Don't add until fundamentals improve.`);
-    } else if (weak) {
+    } else if (weak) { rule = 'weak';
       action = 'TRIM'; tone = 'warn';
-      headline = `Fundamentals deteriorating — trim into strength${nr ? ` near ${usd(nr.p)}` : ''}.`;
-      why.push(`Fundamentals are ${f.label.toLowerCase()} (${fnotes}).`);
+      headline = `Fundamentals are weakening. Trim into strength${nr ? ` near ${usd(nr.p)}` : ''}.`;
+      why.push(`Fundamentals are ${f.label.toLowerCase()}${fn}.`);
       steps.push(`Trim 25–33% on rallies.`, `Stop: ${usd(stop)}.`);
-    } else if (broke) {
+    } else if (broke) { rule = 'mixed-breakdown';
       action = 'WATCH'; tone = 'warn';
-      headline = `Mixed fundamentals and it lost the ${broke.label} (${usd(broke.p)}) — on watch.`;
-      why.push(`Fundamentals are mixed (${fnotes}).`, `Breakdowns without strong numbers behind them often follow through.`);
+      headline = `Mixed fundamentals and it lost the ${broke.label} (${usd(broke.p)}). Keep it on watch.`;
+      why.push(`Fundamentals are mixed${fn}.`, `Without strong numbers behind it, there is less reason to expect a quick recovery.`);
       steps.push(`Hold only while above ${usd(stop)}.`, `Reclaiming ${usd(broke.p)} would cancel the warning.`);
-    } else if (nearRes) {
+    } else if (nearRes) { rule = 'mixed-resistance';
       action = 'TRIM'; tone = 'neutral';
-      headline = `Approaching resistance at ${usd(nr.p)} with mixed fundamentals — take some profit into strength.`;
-      why.push(`Fundamentals are mixed (${fnotes}).`, `${nr.label} is ${resDist.toFixed(1)}% above.`);
+      headline = `Approaching resistance at ${usd(nr.p)} with mixed fundamentals. Take some profit into strength.`;
+      why.push(`Fundamentals are mixed${fn}.`, `${nr.label} is ${resDist.toFixed(1)}% above.`);
       steps.push(`Trim 10–25% near ${usd(nr.p)}.`, `Re-buy on a pullback to ${addZone}.`);
-    } else if (nearSup) {
+    } else if (nearSup) { rule = 'mixed-support';
       action = 'HOLD'; tone = 'neutral';
-      headline = `Holding support at ${usd(ns.p)} — hold with a defined stop.`;
-      why.push(`Fundamentals are mixed (${fnotes}).`, `Support is ${supDist.toFixed(1)}% below.`);
+      headline = `Holding support at ${usd(ns.p)}. Hold with a defined stop.`;
+      why.push(`Fundamentals are mixed${fn}.`, `Support is ${supDist.toFixed(1)}% below.`);
       steps.push(`Hold.`, `Stop: daily close below ${usd(stop)}.`);
     } else {
+      rule = 'neutral';
       action = 'HOLD'; tone = 'neutral';
-      headline = 'No strong edge either way — hold and monitor.';
-      why.push(`Fundamentals are mixed (${fnotes || 'limited data'}) and price is between key levels.`);
+      headline = 'No strong edge either way. Hold and keep watching.';
+      why.push(`Fundamentals are mixed${fn} and price is between key levels.`);
       steps.push(`Hold.`, `Watch ${ns ? usd(ns.p) : 'support'} below and ${nr ? usd(nr.p) : 'resistance'} above.`);
     }
 
-    if (num(gainPct) && gainPct > 50 && action !== 'REDUCE') steps.push(`You're up ${gainPct.toFixed(0)}% on this position — consider raising your stop to lock in part of the gain.`);
-    if (num(gainPct) && gainPct < -15) steps.push(`You're down ${Math.abs(gainPct).toFixed(0)}% from cost — decide your max-loss line now, not in the moment.`);
+    if (num(gainPct) && gainPct > 50 && action !== 'REDUCE') steps.push(`You're up ${gainPct.toFixed(0)}% on this position. Consider raising your stop to lock in part of the gain.`);
+    if (num(gainPct) && gainPct < -15) steps.push(`You're down ${Math.abs(gainPct).toFixed(0)}% from cost. Decide your max-loss line now, not in the moment.`);
 
-    return { action, tone, headline, why, steps: steps.filter(Boolean), stop, target, addZone };
+    return { rule, action, tone, headline, why, steps: steps.filter(Boolean), stop, target, addZone };
   }
 
   // One-line "why" for the over/underperformer lists.
   function explainPerf(a, period) {
     if (period === 'day') {
       const parts = [`${pct(a.q.dp)} vs S&P ${pct(a.q.dp - a.dayRel)}.`];
-      parts.push(Math.abs(a.idio) < 0.5 ? `Beta ${a.beta.toFixed(1)} explains the move — market-driven.`
-        : a.idio > 0 ? `${pct(a.idio)} better than its beta implies — relative strength.`
-          : `${pct(a.idio)} worse than its beta implies — stock-specific selling.`);
+      parts.push(Math.abs(a.idio) < 0.5 ? `Beta ${a.beta.toFixed(1)} explains the move, so it is market-driven.`
+        : a.idio > 0 ? `${pct(a.idio)} better than its beta implies, a sign of relative strength.`
+          : `${pct(a.idio)} worse than its beta implies, so the selling is stock-specific.`);
       if (a.secSym !== 'SPY' && num(a.secDp)) parts.push(`Sector ${a.secSym} ${pct(a.secDp)}.`);
       return parts.join(' ');
     }

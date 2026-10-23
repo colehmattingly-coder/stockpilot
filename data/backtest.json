@@ -1,0 +1,289 @@
+{
+ "generated": "2026-10-23",
+ "from": "2021-10-25",
+ "to": "2026-09-25",
+ "horizon": 20,
+ "symbols": [
+  "AAPL",
+  "MSFT",
+  "NVDA",
+  "AMD",
+  "ORCL",
+  "CRM",
+  "ADBE",
+  "INTC",
+  "GOOGL",
+  "META",
+  "NFLX",
+  "DIS",
+  "AMZN",
+  "TSLA",
+  "HD",
+  "NKE",
+  "MCD",
+  "KO",
+  "PG",
+  "WMT",
+  "COST",
+  "JPM",
+  "BAC",
+  "GS",
+  "V",
+  "JNJ",
+  "UNH",
+  "PFE",
+  "LLY",
+  "XOM",
+  "CVX",
+  "COP",
+  "CAT",
+  "BA",
+  "UPS",
+  "NEE",
+  "DUK",
+  "LIN",
+  "FCX",
+  "PLD"
+ ],
+ "observations": 49400,
+ "baseline": {
+  "n": 49400,
+  "avgFwd": 1,
+  "pctUp": 53.2,
+  "avgExcess": 0.1,
+  "pctBeatSpy": 48,
+  "stopHit": 32.9,
+  "targetHit": 58.9
+ },
+ "byAction": {
+  "HOLD": {
+   "n": 33572,
+   "avgFwd": 1.2,
+   "pctUp": 54,
+   "avgExcess": 0.2,
+   "pctBeatSpy": 48.9,
+   "stopHit": 36.4,
+   "targetHit": 46
+  },
+  "TRIM": {
+   "n": 12716,
+   "avgFwd": 0.6,
+   "pctUp": 51.4,
+   "avgExcess": -0.2,
+   "pctBeatSpy": 46.1,
+   "stopHit": 23.9,
+   "targetHit": 86.5
+  },
+  "WATCH": {
+   "n": 3112,
+   "avgFwd": 0.6,
+   "pctUp": 51.8,
+   "avgExcess": -0.2,
+   "pctBeatSpy": 46.9,
+   "stopHit": 32.6,
+   "targetHit": 86.7
+  }
+ },
+ "byRule": {
+  "mixed-support": {
+   "n": 16801,
+   "avgFwd": 1.1,
+   "pctUp": 54,
+   "avgExcess": 0.1,
+   "pctBeatSpy": 48.7,
+   "stopHit": 48.5,
+   "targetHit": 45.3
+  },
+  "mixed-resistance": {
+   "n": 12716,
+   "avgFwd": 0.6,
+   "pctUp": 51.4,
+   "avgExcess": -0.2,
+   "pctBeatSpy": 46.1,
+   "stopHit": 23.9,
+   "targetHit": 86.5
+  },
+  "neutral": {
+   "n": 16771,
+   "avgFwd": 1.3,
+   "pctUp": 54.1,
+   "avgExcess": 0.3,
+   "pctBeatSpy": 49,
+   "stopHit": 24.3,
+   "targetHit": 46.7
+  },
+  "mixed-breakdown": {
+   "n": 3112,
+   "avgFwd": 0.6,
+   "pctUp": 51.8,
+   "avgExcess": -0.2,
+   "pctBeatSpy": 46.9,
+   "stopHit": 32.6,
+   "targetHit": 86.7
+  }
+ },
+ "support": {
+  "all": {
+   "n": 21836,
+   "held": 54.1,
+   "chance": 50.9,
+   "edge": 3.1,
+   "avgFwd": 0.8,
+   "pctUp": 52.9
+  },
+  "byMarket": {
+   "Strong market (58+)": {
+    "n": 8529,
+    "held": 54.3,
+    "chance": 51.2,
+    "edge": 3,
+    "avgFwd": 0.5,
+    "pctUp": 52.4
+   },
+   "Neutral market": {
+    "n": 6231,
+    "held": 54.7,
+    "chance": 51.1,
+    "edge": 3.6,
+    "avgFwd": 0.8,
+    "pctUp": 52.4
+   },
+   "Weak market (<42)": {
+    "n": 7076,
+    "held": 53.3,
+    "chance": 50.4,
+    "edge": 2.8,
+    "avgFwd": 1.2,
+    "pctUp": 54.1
+   }
+  },
+  "byLevel": {
+   "23.6% retracement": {
+    "n": 7143,
+    "held": 58.4,
+    "chance": 52.4,
+    "edge": 6,
+    "avgFwd": 0.7,
+    "pctUp": 52.6
+   },
+   "38.2% retracement": {
+    "n": 4936,
+    "held": 52.6,
+    "chance": 50.4,
+    "edge": 2.2,
+    "avgFwd": 0.3,
+    "pctUp": 50.3
+   },
+   "50% retracement": {
+    "n": 3511,
+    "held": 49.4,
+    "chance": 49,
+    "edge": 0.4,
+    "avgFwd": 0.6,
+    "pctUp": 52.9
+   },
+   "61.8% retracement": {
+    "n": 3317,
+    "held": 49,
+    "chance": 48.9,
+    "edge": 0.1,
+    "avgFwd": 0.6,
+    "pctUp": 50.8
+   },
+   "52-week low": {
+    "n": 2929,
+    "held": 57.1,
+    "chance": 52.6,
+    "edge": 4.5,
+    "avgFwd": 2.5,
+    "pctUp": 60.7
+   }
+  }
+ },
+ "example": {
+  "strong": {
+   "n": 2332,
+   "avgFwd": 0.8,
+   "pctUp": 51.5,
+   "avgExcess": -0.1,
+   "pctBeatSpy": 48.7,
+   "stopHit": 50,
+   "targetHit": 52.1
+  },
+  "weak": {
+   "n": 2880,
+   "avgFwd": 1.5,
+   "pctUp": 56.3,
+   "avgExcess": 0.2,
+   "pctBeatSpy": 48.9,
+   "stopHit": 48,
+   "targetHit": 44
+  },
+  "all": {
+   "n": 7076,
+   "avgFwd": 1.2,
+   "pctUp": 54.1,
+   "avgExcess": 0,
+   "pctBeatSpy": 48.5,
+   "stopHit": 47,
+   "targetHit": 50.8
+  }
+ },
+ "breakdown": {
+  "broke": {
+   "n": 3112,
+   "avgFwd": 0.6,
+   "pctUp": 51.8,
+   "avgExcess": -0.2,
+   "pctBeatSpy": 46.9,
+   "stopHit": 32.6,
+   "targetHit": 86.7
+  },
+  "notBroke": {
+   "n": 46288,
+   "avgFwd": 1,
+   "pctUp": 53.3,
+   "avgExcess": 0.1,
+   "pctBeatSpy": 48.1,
+   "stopHit": 33,
+   "targetHit": 57.1
+  }
+ },
+ "sentiment": [
+  {
+   "label": "Risk-off (0–24)",
+   "days": 127,
+   "avgFwd": 1.3,
+   "pctUp": 60.6
+  },
+  {
+   "label": "Cautious (25–41)",
+   "days": 270,
+   "avgFwd": 1,
+   "pctUp": 63
+  },
+  {
+   "label": "Neutral (42–57)",
+   "days": 349,
+   "avgFwd": 0.9,
+   "pctUp": 65.3
+  },
+  {
+   "label": "Constructive (58–74)",
+   "days": 336,
+   "avgFwd": 0.7,
+   "pctUp": 61.6
+  },
+  {
+   "label": "Risk-on (75–100)",
+   "days": 153,
+   "avgFwd": 0.9,
+   "pctUp": 65.4
+  }
+ ],
+ "spyAll": {
+  "days": 1235,
+  "avgFwd": 0.9,
+  "pctUp": 63.3
+ }
+}
